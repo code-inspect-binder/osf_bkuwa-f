@@ -1,0 +1,240 @@
+---
+title: "Replication of Amit et al. (2013, Experiment 2) -- Main Analysis"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: darkly
+    toc: true
+    toc_float: true
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+source("main_analysis_code.R")
+```
+
+
+# Hypothesis 1 - Social Distance and Instruction Wording (Mixed ANOVA)
+
+## Descriptive Statistics
+
+```{r}
+replication %>% 
+  summarise(
+    mean_close     = mean(close),
+    sd_close       = sd(close),
+    median_close   = median(close),
+    mean_distant   = mean(distant),
+    sd_distant     = sd(distant),
+    median_distant = median(distant),
+    n              = n()
+  )
+```
+
+```{r}
+replication %>% 
+  group_by(amit_wording) %>% 
+  summarise(
+    mean_close     = mean(close),
+    sd_close       = sd(close),
+    median_close   = median(close),
+    mean_distant   = mean(distant),
+    sd_distant     = sd(distant),
+    median_distant = median(distant),
+    n              = n()
+  )
+```
+
+```{r}
+replication %>% 
+  pivot_longer(
+    cols = c("close", "distant"),
+    names_to = "distance",
+    values_to = "picture_cards"
+  ) %>% 
+  ggplot(.,
+         aes(
+           x = picture_cards
+         )) +
+  facet_grid(amit_wording ~ distance) +
+  geom_histogram(
+    binwidth = 1
+  ) +
+  theme_classic()
+```
+
+## ANOVA Table and Follow-Up Analyses
+
+```{r}
+summary(h1_mixed_anova)$univariate.tests
+```
+
+### Partial Omega-Squared
+
+```{r}
+partial_omega_h1
+```
+
+### Simple Effects
+
+```{r}
+t_original
+```
+
+```{r}
+t_new
+```
+
+# Sample-Specific Targets
+
+## Manipulation Check Table
+
+```{r}
+mc_table
+```
+
+## Descriptive Statistics
+
+```{r}
+sample_specific %>% 
+  summarise(
+    mean_close     = mean(close),
+    sd_close       = sd(close),
+    median_close   = median(close),
+    mean_distant   = mean(distant),
+    sd_distant     = sd(distant),
+    median_distant = median(distant),
+    n              = n()
+  )
+```
+
+```{r}
+sample_specific %>% 
+  group_by(amit_wording) %>% 
+  summarise(
+    mean_close     = mean(close),
+    sd_close       = sd(close),
+    median_close   = median(close),
+    mean_distant   = mean(distant),
+    sd_distant     = sd(distant),
+    median_distant = median(distant),
+    n              = n()
+  )
+```
+
+```{r}
+sample_specific %>% 
+  pivot_longer(
+    cols = c("close", "distant"),
+    names_to = "distance",
+    values_to = "picture_cards"
+  ) %>% 
+  ggplot(.,
+         aes(
+           x = picture_cards
+         )) +
+  facet_grid(amit_wording ~ distance) +
+  geom_histogram(
+    binwidth = 1
+  ) +
+  theme_classic()
+```
+
+## ANOVA Table and Follow-Ups
+
+```{r}
+summary(h1_mixed_anova_samspc)$univariate.tests
+```
+
+### Partial Omega Squared
+
+```{r}
+partial_omega_samspc
+```
+
+### Simple Effects
+
+```{r}
+t_original_samspc
+```
+
+```{r}
+t_new_samspc
+```
+
+# Analysis of All Targets, with Comfort Sending Pictures as a Moderator
+
+```{r}
+all_target_model_comparison
+```
+
+```{r}
+summary(log_reg_measured_inter_three)
+```
+
+## Simple Slopes
+
+```{r}
+simple_slopes_acq
+```
+
+```{r}
+simple_slopes_close
+```
+
+```{r}
+simple_slopes_acq %>% 
+    mutate(
+        org_lower = org_coef - org_se * qnorm(.975),
+        org_upper = org_coef + org_se * qnorm(.975),
+        new_lower = new_coef - new_se * qnorm(.975),
+        new_upper = new_coef + new_se * qnorm(.975),
+        org_ci    = paste(format(round(org_coef, 3), nsmall = 3), " [", format(round(org_lower, 3), nsmall = 3), ", ", format(round(org_upper, 3), nsmall = 3), "]"),
+        new_ci    = paste(format(round(new_coef, 3), nsmall = 3), " [", format(round(new_lower, 3), nsmall = 3), ", ", format(round(new_upper, 3), nsmall = 3), "]")
+    ) %>% 
+  select(target_acq, org_ci, new_ci)
+```
+
+```{r}
+simple_slopes_close %>% 
+    mutate(
+        org_lower = org_coef - org_se * qnorm(.975),
+        org_upper = org_coef + org_se * qnorm(.975),
+        new_lower = new_coef - new_se * qnorm(.975),
+        new_upper = new_coef + new_se * qnorm(.975),
+        org_ci    = paste(format(round(org_coef, 3), nsmall = 3), " [", format(round(org_lower, 3), nsmall = 3), ", ", format(round(org_upper, 3), nsmall = 3), "]"),
+        new_ci    = paste(format(round(new_coef, 3), nsmall = 3), " [", format(round(new_lower, 3), nsmall = 3), ", ", format(round(new_upper, 3), nsmall = 3), "]")
+    ) %>% 
+  select(target_close, org_ci, new_ci)
+```
+
+## Main Figure
+
+```{r, fig.height = 16, fig.width = 10}
+full_plots
+```
+
+# Robustness checks
+
+## Logistic mixed effects model with critical targets
+
+```{r}
+h1_model_comparison
+```
+
+```{r}
+summary(h1_melogreg_inter)
+```
+
+## Perceived appropriateness (instead of self-reported comfort)
+
+```{r}
+approp_lrt
+```
+
+```{r}
+summary(log_reg_measured_inter_three_app)
+```
+
